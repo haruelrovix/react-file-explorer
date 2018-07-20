@@ -23,6 +23,10 @@ const maxDepth = 5;
 //   console.log(`${name} called with arguments:`, args);
 // };
 
+const getDirectoryIcon = isExpanded => isExpanded ? 'fa-folder-open' : 'fa-folder';
+
+const getIcon = ({ node }) => node.isDirectory ? getDirectoryIcon(node.expanded) : 'fa-file-text-o';
+
 export default class Demo extends Component {
   constructor(props) {
     super(props);
@@ -180,6 +184,7 @@ export default class Demo extends Component {
             getNodeKey={this.getNodeKey}
             isVirtualized={true}
             generateNodeProps={rowInfo => ({
+              icons: [<div style={{ marginRight: '4px' }}><i className={`fa ${getIcon(rowInfo)}`} /></div>],
               buttons: [
                 <button
                   className="btn btn-outline-success"
