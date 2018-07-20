@@ -74,7 +74,7 @@ class App extends Component {
     return (
       <Fragment>
         <Title />
-        <SplitPane split="vertical" defaultSize="50%">
+        <SplitPane split="vertical" minSize="30%">
           <Demo
             onChangeTreeData={this.onChangeTreeData}
             treeData={treeData}
