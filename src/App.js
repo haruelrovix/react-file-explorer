@@ -3,7 +3,7 @@ import SplitPane from 'react-split-pane';
 import { toggleExpandedForAll } from 'react-sortable-tree';
 import Demo from './Demo';
 import Editor from './Editor';
-// import Title from './Title';
+import Title from './Title';
 
 import treeData from './defaultTreeData';
 
@@ -73,10 +73,7 @@ class App extends Component {
 
     return (
       <Fragment>
-        {/* <Title /> */}
-        <div style={{ margin: '12px' }}>
-          Manage Folders/Files using ReactJS
-        </div>
+        <Title />
         <SplitPane split="vertical" defaultSize="50%">
           <Demo
             onChangeTreeData={this.onChangeTreeData}
