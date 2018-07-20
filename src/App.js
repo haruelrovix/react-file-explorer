@@ -16,11 +16,12 @@ class App extends Component {
       pathStatus: ''
     };
 
-    this.onChangeTreeData = this.onChangeTreeData.bind(this);
-    this.getNewTreeData = this.getNewTreeData.bind(this);
+    this.addNode = this.addNode.bind(this);
     this.editorRef = this.editorRef.bind(this);
     this.expand = this.expand.bind(this);
+    this.getNewTreeData = this.getNewTreeData.bind(this);
     this.getVisibleNodeInfo = this.getVisibleNodeInfo.bind(this);
+    this.onChangeTreeData = this.onChangeTreeData.bind(this);
   }
 
   componentDidMount() {
@@ -28,6 +29,10 @@ class App extends Component {
       this._editor.set(treeData);
       this._editor.expandAll();
     }
+  }
+
+  addNode(type) {
+    // console.log({type});
   }
 
   onChangeTreeData(treeData) {
@@ -73,7 +78,7 @@ class App extends Component {
 
     return (
       <Fragment>
-        <Title />
+        <Title handleSelect={this.addNode} />
         <SplitPane split="vertical" minSize="30%">
           <Demo
             onChangeTreeData={this.onChangeTreeData}
@@ -81,15 +86,12 @@ class App extends Component {
             expand={this.expand}
             getVisibleNodeInfo={this.getVisibleNodeInfo}
           />
-          {/* <SplitPane split="horizontal" defaultSize="25%">
-            <div /> */}
           <div style={{ padding: '0 12px 12px' }}>
             {this.state.pathStatus}
             <div style={{ visibility: 'hidden' }}>
               <Editor onChange={this.getNewTreeData} editorRef={this.editorRef} />
             </div>
           </div>
-          {/* </SplitPane> */}
         </SplitPane>
       </Fragment>
     );

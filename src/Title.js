@@ -8,6 +8,10 @@ const AddButton = () => (
 );
 
 export default class Title extends Component {
+  handleSelect(type) {
+    this.props.handleSelect(type);
+  }
+
   render() {
     return (
       <Navbar>
@@ -16,10 +20,10 @@ export default class Title extends Component {
             Manage Folders/Files using ReactJS
           </Navbar.Brand>
         </Navbar.Header>
-        <Nav pullRight>
-          <NavDropdown eventKey={3} title={<AddButton />} id="basic-nav-dropdown" noCaret>
-            <MenuItem eventKey={3.1}>Folder</MenuItem>
-            <MenuItem eventKey={3.2}>File</MenuItem>
+        <Nav pullRight onSelect={k => this.handleSelect(k)}>
+          <NavDropdown title={<AddButton />} id="basic-nav-dropdown" noCaret>
+            <MenuItem eventKey="folder">Folder</MenuItem>
+            <MenuItem eventKey="file">File</MenuItem>
           </NavDropdown>
         </Nav>
       </Navbar>
