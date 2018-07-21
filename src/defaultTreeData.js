@@ -6,15 +6,14 @@
 const isDirectory = true;
 
 const treeData = [
-  { title: 'Folder 1', id: 'folder1', isDirectory, children: [{ title: 'File 1', id: 'file1' }] },
+  { title: 'Folder 1', isDirectory, children: [{ title: 'File 1' }] },
   {
     title: 'Folder 2',
-    id: 'folder2',
     isDirectory,
     children: [
-      { title: 'File 3', id: 'file3' },
-      { title: 'File 2', id: 'file2' },
-      { title: 'Folder 3', id: 'folder3', isDirectory, children: [{ title: 'File 4', id: 'file4' }] },
+      { title: 'File 3' },
+      { title: 'File 2' },
+      { title: 'Folder 3', isDirectory, children: [{ title: 'File 4' }] },
     ],
   }
   // {

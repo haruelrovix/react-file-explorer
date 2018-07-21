@@ -43,7 +43,7 @@ class App extends Component {
     const { currentNode } = this.state;
 
     if (currentNode && currentNode.node && currentNode.node.isDirectory) {
-      let newNode = { title: 'File 99', id: 'file99' };
+      let newNode = { title: `${type} 99` };
 
       if (type === 'folder') {
         newNode = { ...newNode, isDirectory: true };
