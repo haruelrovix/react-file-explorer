@@ -1,6 +1,6 @@
 import React, { Component, Fragment } from 'react';
 import SplitPane from 'react-split-pane';
-import { toggleExpandedForAll } from 'react-sortable-tree';
+import { toggleExpandedForAll, addNodeUnderParent, getNodeAtPath } from 'react-sortable-tree';
 import Demo from './Demo';
 import Editor from './Editor';
 import Title from './Title';
@@ -13,6 +13,7 @@ class App extends Component {
 
     this.state = {
       treeData,
+      currentNode: null,
       pathStatus: ''
     };
 
@@ -20,8 +21,11 @@ class App extends Component {
     this.editorRef = this.editorRef.bind(this);
     this.expand = this.expand.bind(this);
     this.getNewTreeData = this.getNewTreeData.bind(this);
+    this.getNodeKey = this.getNodeKey.bind(this);
     this.getVisibleNodeInfo = this.getVisibleNodeInfo.bind(this);
     this.onChangeTreeData = this.onChangeTreeData.bind(this);
+
+    this.shouldUpdatePathStatus = false;
   }
 
   componentDidMount() {
@@ -31,8 +35,32 @@ class App extends Component {
     }
   }
 
+  getNodeKey({ treeIndex }) {
+    return treeIndex;
+  }
+
   addNode(type) {
-    // console.log({type});
+    const { currentNode } = this.state;
+
+    if (currentNode && currentNode.node && currentNode.node.isDirectory) {
+      let newNode = { title: 'File 99', id: 'file99' };
+
+      if (type === 'folder') {
+        newNode = { ...newNode, isDirectory: true };
+      }
+
+      const path = currentNode.path;
+
+      this.setState(state => ({
+        treeData: addNodeUnderParent({
+          treeData: state.treeData,
+          parentKey: path[path.length - 1],
+          expandParent: true,
+          getNodeKey: this.getNodeKey,
+          newNode,
+        }).treeData,
+      }));
+    }
   }
 
   onChangeTreeData(treeData) {
@@ -69,8 +97,23 @@ class App extends Component {
     });
   }
 
-  getVisibleNodeInfo(node) {
-    this.setState({ pathStatus: node.path.join(' > ') })
+  getVisibleNodeInfo(currentNode) {
+    const { treeData } = this.state;
+
+    if ( currentNode && currentNode.path ) {
+      let path = [...currentNode.path];
+      const joinPath = currentNode.path.map(() => {
+        const { node } = getNodeAtPath({ treeData, path, getNodeKey: this.getNodeKey });
+        path.pop();
+
+        return node && node.title;
+      });
+
+      this.setState({
+        currentNode,
+        pathStatus: joinPath.reverse().join(' > ')
+      });
+    }
   }
 
   render() {

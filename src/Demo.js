@@ -80,8 +80,8 @@ export default class Demo extends Component {
     });
   }
 
-  getNodeKey({ node }) {
-    return node.title;
+  getNodeKey({ treeIndex }) {
+    return treeIndex;
   }
 
   getVisibleNodeInfo(rowInfo) {
