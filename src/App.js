@@ -1,4 +1,5 @@
 import React, { Component, Fragment } from 'react';
+import { Button, Col, ControlLabel, Form, FormControl, FormGroup, Modal } from 'react-bootstrap';
 import SplitPane from 'react-split-pane';
 import { toggleExpandedForAll, addNodeUnderParent, getNodeAtPath } from 'react-sortable-tree';
 import Demo from './Demo';
@@ -7,14 +8,19 @@ import Title from './Title';
 
 import treeData from './defaultTreeData';
 
+const capitalizeFirstLetter = string => string.charAt(0).toUpperCase() + string.slice(1);
+
 class App extends Component {
   constructor(props) {
     super(props);
 
     this.state = {
-      treeData,
       currentNode: null,
-      pathStatus: ''
+      isModalDisplayed: false,
+      newNodeName: '',
+      newNodeType: '',
+      pathStatus: '',
+      treeData
     };
 
     this.addNode = this.addNode.bind(this);
@@ -23,7 +29,10 @@ class App extends Component {
     this.getNewTreeData = this.getNewTreeData.bind(this);
     this.getNodeKey = this.getNodeKey.bind(this);
     this.getVisibleNodeInfo = this.getVisibleNodeInfo.bind(this);
+    this.handleChange = this.handleChange.bind(this);
+    this.inputNodeName = this.inputNodeName.bind(this);
     this.onChangeTreeData = this.onChangeTreeData.bind(this);
+    this.toggleDisplayedModal = this.toggleDisplayedModal.bind(this);
 
     this.shouldUpdatePathStatus = false;
   }
@@ -35,32 +44,45 @@ class App extends Component {
     }
   }
 
-  getNodeKey({ treeIndex }) {
-    return treeIndex;
-  }
-
-  addNode(type) {
-    const { currentNode } = this.state;
+  addNode() {
+    const { currentNode, newNodeType, newNodeName, treeData } = this.state;
 
     if (currentNode && currentNode.node && currentNode.node.isDirectory) {
-      let newNode = { title: `${type} 99` };
+      let newNode = { title: newNodeName };
 
-      if (type === 'folder') {
+      if (newNodeType === 'folder') {
         newNode = { ...newNode, isDirectory: true };
       }
 
       const path = currentNode.path;
 
-      this.setState(state => ({
+      this.setState({
         treeData: addNodeUnderParent({
-          treeData: state.treeData,
+          treeData,
           parentKey: path[path.length - 1],
           expandParent: true,
           getNodeKey: this.getNodeKey,
           newNode,
         }).treeData,
-      }));
+        isModalDisplayed: false,
+      });
     }
+  }
+
+  getNodeKey({ treeIndex }) {
+    return treeIndex;
+  }
+
+  handleChange(e) {
+    this.setState({ newNodeName: e.target.value });
+  }
+
+  inputNodeName(type) {
+    this.setState({
+      isModalDisplayed: true,
+      newNodeName: '',
+      newNodeType: type
+    });
   }
 
   onChangeTreeData(treeData) {
@@ -116,12 +138,49 @@ class App extends Component {
     }
   }
 
+  toggleDisplayedModal() {
+    this.setState({ isModalDisplayed: !this.state.isModalDisplayed });
+  }
+
+  renderAddNodeModal() {
+    const { isModalDisplayed, newNodeType } = this.state;
+
+    return (
+      <Modal show={isModalDisplayed} onHide={this.toggleDisplayedModal}>
+        <Modal.Header>
+          <Modal.Title>Add {capitalizeFirstLetter(newNodeType)}</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Form horizontal>
+            <FormGroup controlId="formAddNode">
+              <Col componentClass={ControlLabel} sm={3}>
+                Input {newNodeType} name
+              </Col>
+              <Col sm={9}>
+                <FormControl
+                  type="text"
+                  value={this.state.newNodeName}
+                  placeholder="Enter text"
+                  onChange={this.handleChange}
+                />
+              </Col>
+            </FormGroup>
+          </Form>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button onClick={this.toggleDisplayedModal}>Close</Button>
+          <Button onClick={this.addNode}>OK</Button>
+        </Modal.Footer>
+      </Modal>
+    );
+  }
+
   render() {
-    const { treeData } = this.state;
+    const { treeData, isModalDisplayed } = this.state;
 
     return (
       <Fragment>
-        <Title handleSelect={this.addNode} />
+        <Title handleSelect={this.inputNodeName} />
         <SplitPane split="vertical" minSize="30%">
           <Demo
             onChangeTreeData={this.onChangeTreeData}
@@ -136,6 +195,7 @@ class App extends Component {
             </div>
           </div>
         </SplitPane>
+        {isModalDisplayed && this.renderAddNodeModal()}
       </Fragment>
     );
   }
