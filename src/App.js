@@ -1,5 +1,5 @@
 import React, { Component, Fragment } from 'react';
-import { Button, Col, ControlLabel, Form, FormControl, FormGroup, Modal } from 'react-bootstrap';
+import { Alert, Button, Col, ControlLabel, Form, FormControl, FormGroup, Modal } from 'react-bootstrap';
 import SplitPane from 'react-split-pane';
 import { toggleExpandedForAll, addNodeUnderParent, getNodeAtPath } from 'react-sortable-tree';
 import Demo from './Demo';
@@ -47,26 +47,36 @@ class App extends Component {
   addNode() {
     const { currentNode, newNodeType, newNodeName, treeData } = this.state;
 
+    let newNode = { title: newNodeName };
+
+    if (newNodeType === 'folder') {
+      newNode = { ...newNode, isDirectory: true };
+    }
+
+    let nodeUnderParent = {
+      treeData,
+      expandParent: true,
+      getNodeKey: this.getNodeKey,
+      newNode,
+    };
+
+    let newTree;
+
     if (currentNode && currentNode.node && currentNode.node.isDirectory) {
-      let newNode = { title: newNodeName };
-
-      if (newNodeType === 'folder') {
-        newNode = { ...newNode, isDirectory: true };
-      }
-
       const path = currentNode.path;
 
-      this.setState({
-        treeData: addNodeUnderParent({
-          treeData,
-          parentKey: path[path.length - 1],
-          expandParent: true,
-          getNodeKey: this.getNodeKey,
-          newNode,
-        }).treeData,
-        isModalDisplayed: false,
+      newTree = addNodeUnderParent({
+        ...nodeUnderParent,
+        parentKey: path[path.length - 1]
       });
+    } else {
+      newTree = addNodeUnderParent(nodeUnderParent);
     }
+
+    this.setState({
+      treeData: newTree.treeData,
+      isModalDisplayed: false
+    });
   }
 
   getNodeKey({ treeIndex }) {
@@ -143,12 +153,20 @@ class App extends Component {
   }
 
   renderAddNodeModal() {
-    const { isModalDisplayed, newNodeType } = this.state;
+    const { currentNode, isModalDisplayed, newNodeName, newNodeType } = this.state;
 
     return (
-      <Modal show={isModalDisplayed} onHide={this.toggleDisplayedModal}>
+      currentNode && currentNode.node && !currentNode.node.isDirectory ?
+      <Modal show={isModalDisplayed}>
+        <Modal.Body>
+          <Alert bsStyle="warning" onDismiss={this.toggleDisplayedModal}>
+            <strong>Oops!</strong> {currentNode.node.title} is not a folder.
+          </Alert>
+        </Modal.Body>
+      </Modal>
+      : <Modal show={isModalDisplayed} onHide={this.toggleDisplayedModal}>
         <Modal.Header>
-          <Modal.Title>Add {capitalizeFirstLetter(newNodeType)}</Modal.Title>
+          <Modal.Title>Add New {capitalizeFirstLetter(newNodeType)}</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <Form horizontal>
@@ -159,7 +177,7 @@ class App extends Component {
               <Col sm={9}>
                 <FormControl
                   type="text"
-                  value={this.state.newNodeName}
+                  value={newNodeName}
                   placeholder="Enter text"
                   onChange={this.handleChange}
                 />
@@ -169,7 +187,7 @@ class App extends Component {
         </Modal.Body>
         <Modal.Footer>
           <Button onClick={this.toggleDisplayedModal}>Close</Button>
-          <Button onClick={this.addNode}>OK</Button>
+          <Button onClick={this.addNode} disabled={!newNodeName}>OK</Button>
         </Modal.Footer>
       </Modal>
     );
