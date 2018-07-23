@@ -184,6 +184,21 @@ export default class Demo extends Component {
             getNodeKey={this.getNodeKey}
             isVirtualized={true}
             generateNodeProps={rowInfo => ({
+              title: ({ node }) => {
+                return (
+                  node.shouldRenderAsInputForm ?
+                  <input
+                    style={{ fontSize: '1.1rem' }}
+                    value={node.title}
+                    onChange={event => this.props.changeNodeAtPath(event, rowInfo)}
+                    onKeyPress={event => {
+                      if (event.key === 'Enter') this.props.onBlurRenameNode(rowInfo)
+                    }}
+                    onBlur={() => this.props.onBlurRenameNode(rowInfo)}
+                  />
+                  : <div onDoubleClick={() => this.props.toggleInputForm(rowInfo)}>{node.title}</div>
+                );
+              },
               icons: [<div style={{ marginRight: '4px' }}><i className={`fa ${getIcon(rowInfo)}`} /></div>],
               buttons: [
                 <button

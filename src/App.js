@@ -11,7 +11,12 @@ import {
   Modal
 } from 'react-bootstrap';
 import SplitPane from 'react-split-pane';
-import { toggleExpandedForAll, addNodeUnderParent, getNodeAtPath } from 'react-sortable-tree';
+import {
+  addNodeUnderParent,
+  changeNodeAtPath,
+  getNodeAtPath,
+  toggleExpandedForAll
+} from 'react-sortable-tree';
 import Demo from './Demo';
 import Editor from './Editor';
 import Title from './Title';
@@ -34,6 +39,7 @@ class App extends Component {
     };
 
     this.addNode = this.addNode.bind(this);
+    this.changeNodeAtPath = this.changeNodeAtPath.bind(this);
     this.editorRef = this.editorRef.bind(this);
     this.expand = this.expand.bind(this);
     this.getNewTreeData = this.getNewTreeData.bind(this);
@@ -41,8 +47,10 @@ class App extends Component {
     this.getVisibleNodeInfo = this.getVisibleNodeInfo.bind(this);
     this.handleChange = this.handleChange.bind(this);
     this.inputNodeName = this.inputNodeName.bind(this);
+    this.onBlurRenameNode = this.onBlurRenameNode.bind(this);
     this.onChangeTreeData = this.onChangeTreeData.bind(this);
     this.toggleDisplayedModal = this.toggleDisplayedModal.bind(this);
+    this.toggleInputForm = this.toggleInputForm.bind(this);
 
     this.isOKButtonDisabled = true;
     this.shouldDisplayError = false;
@@ -105,6 +113,19 @@ class App extends Component {
     this.setState(state);
 
     this.isOKButtonDisabled = true;
+  }
+
+  changeNodeAtPath(event, rowInfo) {
+    const title = event.target.value;
+
+    this.setState(state => ({
+      treeData: changeNodeAtPath({
+        treeData: state.treeData,
+        path: rowInfo.path,
+        getNodeKey: this.getNodeKey,
+        newNode: { ...rowInfo.node, title },
+      }),
+    }));
   }
 
   getNodeKey({ treeIndex }) {
@@ -225,6 +246,19 @@ class App extends Component {
     }
   }
 
+  onBlurRenameNode(rowInfo) {
+    delete rowInfo.node.shouldRenderAsInputForm;
+
+    this.setState({
+      treeData: changeNodeAtPath({
+        treeData: this.state.treeData,
+        path: rowInfo.path,
+        getNodeKey: this.getNodeKey,
+        newNode: { ...rowInfo.node },
+      })
+    });
+  }
+
   renderAddNodeModal() {
     const { currentNode, isModalDisplayed, newNodeName, newNodeType } = this.state;
 
@@ -272,6 +306,18 @@ class App extends Component {
     this.setState({ isModalDisplayed: !this.state.isModalDisplayed });
   }
 
+  toggleInputForm(rowInfo) {
+    this.setState({
+      treeData: changeNodeAtPath({
+        treeData: this.state.treeData,
+        path: rowInfo.path,
+        getNodeKey: this.getNodeKey,
+        newNode: { ...rowInfo.node, shouldRenderAsInputForm: true },
+      }),
+      previousDoubleClickNodeKey: rowInfo.path
+    });
+  }
+
   render() {
     const { treeData, isModalDisplayed } = this.state;
 
@@ -280,10 +326,13 @@ class App extends Component {
         <Title handleSelect={this.inputNodeName} />
         <SplitPane split="vertical" minSize="30%">
           <Demo
-            onChangeTreeData={this.onChangeTreeData}
             treeData={treeData}
+            changeNodeAtPath={this.changeNodeAtPath}
             expand={this.expand}
             getVisibleNodeInfo={this.getVisibleNodeInfo}
+            onBlurRenameNode={this.onBlurRenameNode}
+            onChangeTreeData={this.onChangeTreeData}
+            toggleInputForm={this.toggleInputForm}
           />
           <div style={{ padding: '0 12px 12px' }}>
             {this.state.pathStatus}
