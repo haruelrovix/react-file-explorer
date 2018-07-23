@@ -73,22 +73,36 @@ class App extends Component {
     };
 
     let newTree;
+    let updateCurrentNode;
 
     if (currentNode && currentNode.node && currentNode.node.isDirectory) {
       const path = currentNode.path;
 
       newTree = addNodeUnderParent({
         ...nodeUnderParent,
-        parentKey: path[path.length - 1]
+        parentKey: path ? path[path.length - 1] : currentNode.treeIndex
       });
+
+      updateCurrentNode = getNodeAtPath({ treeData: newTree.treeData, path: path ? path : [currentNode.treeIndex], getNodeKey: this.getNodeKey });
     } else {
       newTree = addNodeUnderParent(nodeUnderParent);
+
+      updateCurrentNode = getNodeAtPath({ treeData: newTree.treeData, getNodeKey: this.getNodeKey });
     }
 
-    this.setState({
+    let state = {
       treeData: newTree.treeData,
       isModalDisplayed: false
-    });
+    };
+
+    if (updateCurrentNode) {
+      state = {
+        ...state,
+        currentNode: updateCurrentNode
+      };
+    }
+
+    this.setState(state);
 
     this.isOKButtonDisabled = true;
   }
