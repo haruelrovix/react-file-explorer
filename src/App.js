@@ -35,6 +35,7 @@ class App extends Component {
       newNodeName: '',
       newNodeType: '',
       pathStatus: '',
+      previousNodeTitle: '',
       treeData
     };
 
@@ -246,15 +247,18 @@ class App extends Component {
     }
   }
 
-  onBlurRenameNode(rowInfo) {
-    delete rowInfo.node.shouldRenderAsInputForm;
+  onBlurRenameNode({ node, path }, revertToPreviousName) {
+    delete node.shouldRenderAsInputForm;
+
+    const { previousNodeTitle: title, treeData } = this.state;
+    const newNode = revertToPreviousName ? { ...node, title } : { ...node };
 
     this.setState({
       treeData: changeNodeAtPath({
-        treeData: this.state.treeData,
-        path: rowInfo.path,
+        treeData,
+        path,
         getNodeKey: this.getNodeKey,
-        newNode: { ...rowInfo.node },
+        newNode,
       })
     });
   }
@@ -314,7 +318,7 @@ class App extends Component {
         getNodeKey: this.getNodeKey,
         newNode: { ...rowInfo.node, shouldRenderAsInputForm: true },
       }),
-      previousDoubleClickNodeKey: rowInfo.path
+      previousNodeTitle: rowInfo.node.title
     });
   }
 

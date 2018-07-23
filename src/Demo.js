@@ -192,7 +192,10 @@ export default class Demo extends Component {
                     value={node.title}
                     onChange={event => this.props.changeNodeAtPath(event, rowInfo)}
                     onKeyPress={event => {
-                      if (event.key === 'Enter') this.props.onBlurRenameNode(rowInfo)
+                      if (event.key === 'Enter') this.props.onBlurRenameNode(rowInfo);
+                    }}
+                    onKeyDown={event => {
+                      if (event.keyCode === 27) this.props.onBlurRenameNode(rowInfo, true);
                     }}
                     onBlur={() => this.props.onBlurRenameNode(rowInfo)}
                   />
