@@ -55,7 +55,7 @@
   "scripts": {
     "start": "node scripts/start.js",
     "predeploy": "npm run build",
-    "deploy": "surge ./build react-sortable-tree.surge.sh",
+    "deploy": "surge ./build react-files-explorer.surge.sh",
     "build": "node scripts/build.js",
     "serve": "yarn build && serve -s build"
   },
@@ -100,5 +100,8 @@
   },
   "eslintConfig": {
     "extends": "react-app"
+  },
+  "devDependencies": {
+    "surge": "^0.20.1"
   }
 }
