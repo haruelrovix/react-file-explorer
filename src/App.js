@@ -1,5 +1,15 @@
 import React, { Component, Fragment } from 'react';
-import { Alert, Button, Col, ControlLabel, Form, FormControl, FormGroup, Modal } from 'react-bootstrap';
+import {
+  Alert,
+  Button,
+  Col,
+  ControlLabel,
+  Form,
+  FormControl,
+  FormGroup,
+  HelpBlock,
+  Modal
+} from 'react-bootstrap';
 import SplitPane from 'react-split-pane';
 import { toggleExpandedForAll, addNodeUnderParent, getNodeAtPath } from 'react-sortable-tree';
 import Demo from './Demo';
@@ -34,6 +44,8 @@ class App extends Component {
     this.onChangeTreeData = this.onChangeTreeData.bind(this);
     this.toggleDisplayedModal = this.toggleDisplayedModal.bind(this);
 
+    this.isOKButtonDisabled = true;
+    this.shouldDisplayError = false;
     this.shouldUpdatePathStatus = false;
   }
 
@@ -77,6 +89,8 @@ class App extends Component {
       treeData: newTree.treeData,
       isModalDisplayed: false
     });
+
+    this.isOKButtonDisabled = true;
   }
 
   getNodeKey({ treeIndex }) {
@@ -110,6 +124,55 @@ class App extends Component {
         treeData: this._editor.get(),
       });
     }
+  }
+
+  getValidationState() {
+    const { currentNode, newNodeName, newNodeType, treeData } = this.state;
+
+    if (!newNodeName) {
+      this.isOKButtonDisabled = true;
+      this.shouldDisplayError = false;
+
+      return null;
+    }
+
+    if (!currentNode) {
+      const isExist = treeData.find(node => {
+        if (newNodeType === 'folder') return node.title === newNodeName && node.isDirectory;
+
+        return node.title === newNodeName && !node.isDirectory;
+      });
+
+      if (isExist) {
+        this.isOKButtonDisabled = true;
+        this.shouldDisplayError = true;
+
+        return 'error';
+      }
+
+      this.isOKButtonDisabled = false;
+      this.shouldDisplayError = false;
+
+      return null;
+    }
+
+    const isExist = currentNode.node.children.find(node => {
+      if (newNodeType === 'folder') return node.title === newNodeName && node.isDirectory;
+
+      return node.title === newNodeName && !node.isDirectory;
+    });
+
+    if (isExist) {
+      this.isOKButtonDisabled = true;
+      this.shouldDisplayError = true;
+
+      return 'error';
+    }
+
+    this.isOKButtonDisabled = false;
+    this.shouldDisplayError = false;
+
+    return null;
   }
 
   editorRef(editor) {
@@ -148,10 +211,6 @@ class App extends Component {
     }
   }
 
-  toggleDisplayedModal() {
-    this.setState({ isModalDisplayed: !this.state.isModalDisplayed });
-  }
-
   renderAddNodeModal() {
     const { currentNode, isModalDisplayed, newNodeName, newNodeType } = this.state;
 
@@ -170,7 +229,7 @@ class App extends Component {
         </Modal.Header>
         <Modal.Body>
           <Form horizontal>
-            <FormGroup controlId="formAddNode">
+            <FormGroup controlId="formAddNode" validationState={this.getValidationState()}>
               <Col componentClass={ControlLabel} sm={3}>
                 Input {newNodeType} name
               </Col>
@@ -181,16 +240,22 @@ class App extends Component {
                   placeholder="Enter text"
                   onChange={this.handleChange}
                 />
+                <FormControl.Feedback />
+                {this.shouldDisplayError && <HelpBlock>{newNodeName} is already taken.</HelpBlock>}
               </Col>
             </FormGroup>
           </Form>
         </Modal.Body>
         <Modal.Footer>
           <Button onClick={this.toggleDisplayedModal}>Close</Button>
-          <Button onClick={this.addNode} disabled={!newNodeName}>OK</Button>
+          <Button onClick={this.addNode} disabled={this.isOKButtonDisabled}>OK</Button>
         </Modal.Footer>
       </Modal>
     );
+  }
+
+  toggleDisplayedModal() {
+    this.setState({ isModalDisplayed: !this.state.isModalDisplayed });
   }
 
   render() {
